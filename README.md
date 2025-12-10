@@ -20,20 +20,20 @@
   Building an **AI-powered research assistant for accountants** using Next.js, Supabase, Python, Pinecone, and open-source LLMs.  
 
 - **Junior Software Engineer – Glencore, Hail Creek Mine (Dec 2025 – Feb 2026)**  
-  Applying software engineering to real-world industrial challenges.  
+  Mining Improvements Department developing Web app data panel for Haul Truck operators
 
 ---
 
 ### 🛠️ Tech Stack
 - **Languages:** HTML, CSS, Python, JavaScript, TypeScript, SQL  
-- **Frameworks & Tools:** Next.js, TailwindCSS, Supabase, Pinecone, LangChain/Graph, FastAPI, Pipecat and more  
-- **Automation Platforms:** n8n, Make.com, Vapi, Voiceflow
+- **Frameworks & Tools:** Next.js, TailwindCSS, Supabase, Pinecone, LangChain/Graph, FastAPI, Pipecat & LiveKit and more  
+- **Automation Platforms:** n8n, Make.com, Vapi, Voiceflow and more
 - **Focus:** AI Engineering, Full-Stack Development, Workflow Automation  
 
 ---
 
 ### 📂 Featured Projects
-- **[TaxGuru AI](#)** – AI assistant for tax research
+- **TaxGuru AI** – AI assistant for tax research
 - **Admin Panel (TaxGuru)** - For Tax Guru admins to CRUD AI KB and view user analytics
 - **AutomateWise Solutions** – AI chat agents, voice agents, workflow automations, and dashboards  
 
