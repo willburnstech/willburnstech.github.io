@@ -1,0 +1,19 @@
+# Contact links in the footer
+
+- type: github
+  icon: "fab fa-github"
+
+- type: twitter
+  icon: "fab fa-x-twitter"
+
+- type: linkedin
+  icon: "fab fa-linkedin"
+  url: "https://linkedin.com/in/willburnstech"
+
+- type: email
+  icon: "fas fa-envelope"
+  noblank: true
+
+- type: rss
+  icon: "fas fa-rss"
+  noblank: true
