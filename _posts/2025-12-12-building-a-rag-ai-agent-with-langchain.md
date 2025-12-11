@@ -1,6 +1,6 @@
 ---
 title: "Building a RAG AI Agent with LangChain"
-date: 2025-12-11 14:00:00 +1000
+date: 2025-12-12 14:00:00 +1000
 categories: [AI, Tutorial]
 tags: [rag, langchain, python, vector-database, llm, pinecone, ai-agents]
 description: "A practical guide to building a Retrieval-Augmented Generation (RAG) AI agent using LangChain, covering architecture decisions, vector database selection, embedding models, and real implementation insights."
