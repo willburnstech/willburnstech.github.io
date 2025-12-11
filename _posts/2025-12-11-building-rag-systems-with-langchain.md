@@ -1,9 +1,9 @@
 ---
-title: "Building Production-Ready RAG Systems with LangChain"
+title: "Building a RAG AI Agent with LangChain"
 date: 2025-12-11 14:00:00 +1000
 categories: [AI, Tutorial]
-tags: [rag, langchain, python, vector-database, llm]
-description: "A comprehensive guide to building Retrieval-Augmented Generation (RAG) systems using LangChain, covering architecture, implementation, and best practices."
+tags: [rag, langchain, python, vector-database, llm, pinecone, ai-agents]
+description: "A practical guide to building a Retrieval-Augmented Generation (RAG) AI agent using LangChain, covering architecture decisions, vector database selection, embedding models, and real implementation insights."
 image:
   path: /assets/img/posts/rag-architecture.png
   alt: "RAG System Architecture Diagram"
@@ -13,68 +13,129 @@ mermaid: true
 
 ## Introduction
 
-Retrieval-Augmented Generation (RAG) has become the go-to pattern for building AI applications that need access to custom knowledge bases. In this post, we'll build a production-ready RAG system from scratch.
+If you've ever asked an LLM a question about recent events or your own data and watched it confidently make something up, you've experienced the core problem that RAG solves. Large language models are impressive, but they're frozen in time and have no idea what's in your documents, your codebase, or your company's knowledge base.
 
-> This is a technical template post demonstrating Chirpy's features. Replace the content with your actual tutorial!
-{: .prompt-info }
+That's where Retrieval-Augmented Generation comes in. I've spent a good amount of time building RAG systems, and I can tell you - once you understand the architecture and make the right choices early on, everything clicks into place. In this post, I'll walk you through building a RAG AI agent with LangChain, sharing what I've learned along the way.
 
-## What is RAG?
+## Understanding RAG Architecture
 
-RAG combines the power of large language models with external knowledge retrieval. Instead of relying solely on the LLM's training data, RAG:
+Before diving into code, let's look at what we're actually building. RAG isn't magic - it's a pattern that gives your LLM access to external knowledge at query time.
 
-1. **Retrieves** relevant documents from a knowledge base
-2. **Augments** the prompt with this context
-3. **Generates** a response grounded in the retrieved information
+Here's the high-level flow:
 
 ```mermaid
-flowchart LR
-    A[User Query] --> B[Embedding Model]
-    B --> C[Vector Search]
-    C --> D[Retrieved Documents]
-    D --> E[LLM + Context]
-    E --> F[Response]
+flowchart TB
+    subgraph Ingestion ["Document Ingestion (One-time)"]
+        A[Documents] --> B[Chunking]
+        B --> C[Embedding Model]
+        C --> D[(Vector Database)]
+    end
+
+    subgraph Query ["Query Time"]
+        E[User Query] --> F[Embedding Model]
+        F --> G[Vector Search]
+        D --> G
+        G --> H[Retrieved Context]
+        H --> I[LLM + Context]
+        I --> J[Response]
+    end
 ```
 
-## Prerequisites
+The architecture breaks down into two main phases:
 
-Before we start, ensure you have:
+**Ingestion Phase** - This happens once (or whenever your documents update). You take your documents, split them into chunks, convert those chunks into vector embeddings, and store them in a vector database.
 
-- Python 3.9+
-- OpenAI API key (or another LLM provider)
-- Basic understanding of embeddings and vector databases
+**Query Phase** - When a user asks a question, you embed that question using the same model, search your vector database for similar chunks, then pass those chunks as context to your LLM along with the original question.
 
-```bash
-pip install langchain langchain-openai chromadb tiktoken
-```
+The beauty of this approach is that your LLM now has access to your specific data without needing to fine-tune anything. The retrieved context grounds the response in actual information rather than the model's training data.
 
-## Project Structure
+## Choosing Your Vector Database
 
-```
-rag-system/
-├── src/
-│   ├── __init__.py
-│   ├── embeddings.py
-│   ├── retriever.py
-│   ├── chain.py
-│   └── main.py
-├── data/
-│   └── documents/
-├── tests/
-│   └── test_retriever.py
-├── .env
-└── requirements.txt
-```
+This is one of the first decisions you'll need to make, and it matters more than you might think. There are several solid options out there:
 
-## Step 1: Document Loading and Chunking
+- **Pinecone** - Fully managed, scales effortlessly, great developer experience
+- **Chroma** - Open source, easy to get started, good for prototyping
+- **Weaviate** - Open source with hybrid search capabilities
+- **Qdrant** - Open source, performant, good filtering options
+- **PostgreSQL with pgvector** - If you're already running Postgres
 
-The first step is loading and chunking your documents:
+What it really comes down to is this: **managed vs self-hosted**, **scale requirements**, and **your existing infrastructure**.
+
+I've used Pinecone for most of my production RAG systems, and here's why - I don't want to manage infrastructure for vector search. Pinecone handles the scaling, the indexing optimisations, and the availability. When you're building an AI agent, you want to focus on the agent logic, not on keeping a database running.
+
+That said, if you're prototyping or cost-conscious, Chroma is fantastic for local development. I often start with Chroma locally, then migrate to Pinecone when moving to production.
 
 ```python
-from langchain.document_loaders import DirectoryLoader, TextLoader
+# Pinecone setup example
+from pinecone import Pinecone
+from langchain_pinecone import PineconeVectorStore
+
+pc = Pinecone(api_key="your-api-key")
+
+# Create or connect to an index
+index = pc.Index("rag-agent")
+
+vector_store = PineconeVectorStore(
+    index=index,
+    embedding=embeddings,
+    text_key="text"
+)
+```
+
+## Choosing Your Embedding Model
+
+Your embedding model is what converts text into vectors - and the quality of your embeddings directly impacts retrieval quality. Get this wrong, and your agent will retrieve irrelevant context no matter how good your LLM is.
+
+Here are the main options I've worked with:
+
+**OpenAI Embeddings**
+- `text-embedding-3-small` - Good balance of cost and performance
+- `text-embedding-3-large` - Higher quality, higher cost
+- Easy to use, reliable, but you're paying per token
+
+**Open Source Alternatives**
+- Sentence Transformers (all-MiniLM-L6-v2, etc.) - Free, run locally
+- Cohere Embed - Good quality, competitive pricing
+- Voyage AI - Designed specifically for retrieval
+
+What should you consider?
+
+1. **Dimensions** - Higher dimensions can capture more nuance but use more storage
+2. **Performance** - How well does it actually retrieve relevant documents?
+3. **Cost** - OpenAI charges per token, open source is free but needs compute
+4. **Latency** - Local models are faster, API calls add network overhead
+
+For most use cases, I start with OpenAI's `text-embedding-3-small`. It's 1536 dimensions, performs well, and the cost is reasonable. If I need to optimise costs or run offline, I'll look at sentence transformers.
+
+```python
+from langchain_openai import OpenAIEmbeddings
+
+# OpenAI embeddings
+embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+
+# Or using sentence transformers (free, local)
+from langchain_huggingface import HuggingFaceEmbeddings
+
+embeddings = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2"
+)
+```
+
+## Building the RAG Agent with LangChain
+
+Now let's put it all together. I'll walk through each component as we build out the agent.
+
+### Document Loading and Chunking
+
+First, we need to load documents and split them into chunks. Chunking strategy matters - too large and you'll retrieve irrelevant content, too small and you'll lose context.
+
+```python
+from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-def load_documents(directory: str) -> list:
-    """Load documents from a directory."""
+def load_and_chunk_documents(directory: str):
+    """Load documents and split into chunks for embedding."""
+
     loader = DirectoryLoader(
         directory,
         glob="**/*.txt",
@@ -82,63 +143,94 @@ def load_documents(directory: str) -> list:
     )
     documents = loader.load()
 
-    # Chunk documents for better retrieval
+    # RecursiveCharacterTextSplitter is my go-to
+    # It tries to split on natural boundaries
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
-        chunk_overlap=200,
-        separators=["\n\n", "\n", " ", ""]
+        chunk_overlap=200,  # Overlap helps preserve context at boundaries
+        separators=["\n\n", "\n", ". ", " ", ""]
     )
 
     chunks = text_splitter.split_documents(documents)
+    print(f"Split {len(documents)} documents into {len(chunks)} chunks")
+
     return chunks
 ```
 
-> **Pro Tip:** Chunk size significantly impacts retrieval quality. Smaller chunks (500-1000 tokens) often work better for specific queries, while larger chunks preserve more context.
-{: .prompt-tip }
+I typically use chunk sizes between 500-1000 characters with 10-20% overlap. The overlap is important - it ensures that if a relevant piece of information gets split across chunks, you'll still have context on both sides.
 
-## Step 2: Creating the Vector Store
+### Setting Up the Vector Store
+
+With Pinecone, setting up your vector store looks like this:
 
 ```python
+from pinecone import Pinecone, ServerlessSpec
+from langchain_pinecone import PineconeVectorStore
 from langchain_openai import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
 
-def create_vector_store(documents: list, persist_directory: str) -> Chroma:
-    """Create and persist a vector store."""
+def setup_vector_store(chunks, index_name: str):
+    """Create embeddings and store in Pinecone."""
+
+    # Initialise Pinecone
+    pc = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
+
+    # Create index if it doesn't exist
+    if index_name not in pc.list_indexes().names():
+        pc.create_index(
+            name=index_name,
+            dimension=1536,  # Matches text-embedding-3-small
+            metric="cosine",
+            spec=ServerlessSpec(cloud="aws", region="us-east-1")
+        )
+
     embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 
-    vector_store = Chroma.from_documents(
-        documents=documents,
+    # Create vector store from documents
+    vector_store = PineconeVectorStore.from_documents(
+        documents=chunks,
         embedding=embeddings,
-        persist_directory=persist_directory
+        index_name=index_name
     )
 
     return vector_store
 ```
 
-## Step 3: Building the RAG Chain
+### Creating the RAG Chain
+
+Here's where the retrieval and generation come together:
 
 ```python
 from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
-from langchain.schema.runnable import RunnablePassthrough
-from langchain.schema.output_parser import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
 
-def create_rag_chain(retriever):
-    """Create a RAG chain with the given retriever."""
+def create_rag_chain(vector_store):
+    """Build the RAG chain that retrieves context and generates responses."""
 
-    template = """Answer the question based on the following context.
-    If you cannot answer from the context, say so.
+    # Create retriever from vector store
+    retriever = vector_store.as_retriever(
+        search_type="similarity",
+        search_kwargs={"k": 4}  # Retrieve top 4 chunks
+    )
 
-    Context:
-    {context}
+    # The prompt template - this is crucial
+    template = """You are a helpful assistant. Answer the user's question based on the context provided below.
 
-    Question: {question}
+If the context doesn't contain enough information to answer the question, say so honestly rather than making something up.
 
-    Answer:"""
+Context:
+{context}
+
+Question: {question}
+
+Answer:"""
 
     prompt = ChatPromptTemplate.from_template(template)
+
     llm = ChatOpenAI(model="gpt-4", temperature=0)
 
+    # Build the chain using LCEL
     chain = (
         {"context": retriever, "question": RunnablePassthrough()}
         | prompt
@@ -149,92 +241,66 @@ def create_rag_chain(retriever):
     return chain
 ```
 
-## Step 4: Putting It All Together
+### Putting It All Together
+
+Here's the complete flow:
 
 ```python
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 def main():
-    # Load and process documents
-    documents = load_documents("./data/documents")
+    # Load and chunk your documents
+    chunks = load_and_chunk_documents("./data/documents")
 
-    # Create vector store
-    vector_store = create_vector_store(documents, "./chroma_db")
+    # Set up vector store (this embeds and stores everything)
+    vector_store = setup_vector_store(chunks, "rag-agent-index")
 
-    # Create retriever with search parameters
-    retriever = vector_store.as_retriever(
-        search_type="similarity",
-        search_kwargs={"k": 4}
-    )
+    # Create the RAG chain
+    chain = create_rag_chain(vector_store)
 
-    # Create RAG chain
-    chain = create_rag_chain(retriever)
-
-    # Query the system
-    response = chain.invoke("What is the main topic of the documents?")
+    # Now you can query
+    response = chain.invoke("What are the main features of the product?")
     print(response)
 
 if __name__ == "__main__":
     main()
 ```
 
-## Advanced: Hybrid Search
+## Lessons Learned
 
-For better results, combine semantic and keyword search:
+After building several of these systems, here are the things I wish I'd known from the start:
 
-```python
-from langchain.retrievers import BM25Retriever, EnsembleRetriever
+**Chunking is more important than you think.** I've seen systems fail simply because the chunk size was wrong for the use case. Experiment with different sizes and measure retrieval quality.
 
-def create_hybrid_retriever(documents, vector_store):
-    """Create a hybrid retriever combining BM25 and vector search."""
+**Embeddings need to match.** This sounds obvious, but make sure you're using the same embedding model for ingestion and querying. I've debugged systems where someone switched models and wondered why retrieval stopped working.
 
-    # Keyword-based retriever
-    bm25_retriever = BM25Retriever.from_documents(documents)
-    bm25_retriever.k = 4
+**Metadata is your friend.** Don't just store the text - store source, date, category, whatever is relevant. You can filter on metadata during retrieval, which is incredibly powerful.
 
-    # Vector-based retriever
-    vector_retriever = vector_store.as_retriever(search_kwargs={"k": 4})
+**Test your retrieval separately.** Before you worry about the LLM's responses, make sure the right documents are being retrieved. If retrieval is broken, no amount of prompt engineering will save you.
 
-    # Combine with weighted ensemble
-    ensemble_retriever = EnsembleRetriever(
-        retrievers=[bm25_retriever, vector_retriever],
-        weights=[0.3, 0.7]  # Favor semantic search
-    )
+**Start simple, then optimise.** Basic RAG with good chunking often beats complex hybrid search done poorly. Get the fundamentals right first.
 
-    return ensemble_retriever
-```
+## Wrapping Up
 
-## Performance Considerations
+Building a RAG AI agent isn't as complicated as it might seem at first. The key is understanding the architecture, making informed decisions about your vector database and embedding model, and then iterating on your chunking and prompts.
 
-| Approach | Latency | Accuracy | Cost |
-|----------|---------|----------|------|
-| Simple RAG | Low | Medium | $ |
-| Hybrid Search | Medium | High | $$ |
-| Reranking | High | Very High | $$$ |
+If you're just getting started, I'd recommend:
+1. Start with Chroma locally and OpenAI embeddings
+2. Get a basic pipeline working end-to-end
+3. Test retrieval quality before worrying about the LLM
+4. Move to a managed solution like Pinecone when you're ready for production
 
-## Common Pitfalls
-
-> **Warning:** Avoid these common mistakes when building RAG systems:
-{: .prompt-warning }
-
-1. **Chunks too large** — Retrieved context may contain irrelevant information
-2. **No overlap** — Important context split across chunk boundaries
-3. **Poor prompting** — Not instructing the LLM to use the context properly
-4. **Ignoring metadata** — Useful for filtering and attribution
-
-## Next Steps
-
-In future posts, we'll cover:
-
-- [ ] Adding reranking with Cohere or cross-encoders
-- [ ] Implementing conversation memory
-- [ ] Evaluating RAG performance with RAGAS
-- [ ] Deploying with FastAPI
+From there, you can explore advanced techniques like hybrid search, reranking, and conversation memory. But the foundation we've covered here will take you surprisingly far.
 
 ## Resources
 
 - [LangChain Documentation](https://python.langchain.com/)
-- [Chroma Vector Database](https://www.trychroma.com/)
+- [Pinecone Documentation](https://docs.pinecone.io/)
 - [OpenAI Embeddings Guide](https://platform.openai.com/docs/guides/embeddings)
 
 ---
 
-*Have questions or suggestions? Reach out on [Twitter](https://twitter.com/willburnstech) or leave a comment below!*
+*Have questions about building RAG systems? Feel free to reach out - I'm always happy to chat about AI architecture.*
