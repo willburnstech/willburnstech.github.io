@@ -34,7 +34,7 @@ flowchart TB
     subgraph Query ["Query Time"]
         E[User Query] --> F[Embedding Model]
         F --> G[Vector Search]
-        D --> G
+        G <--> D
         G --> H[Retrieved Context]
         H --> I[LLM + Context]
         I --> J[Response]
