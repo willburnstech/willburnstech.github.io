@@ -1,6 +1,6 @@
 ---
 title: "Building Production-Ready RAG Systems with LangChain"
-date: 2024-12-10 14:00:00 +1000
+date: 2025-12-11 14:00:00 +1000
 categories: [AI, Tutorial]
 tags: [rag, langchain, python, vector-database, llm]
 description: "A comprehensive guide to building Retrieval-Augmented Generation (RAG) systems using LangChain, covering architecture, implementation, and best practices."

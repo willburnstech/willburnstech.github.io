@@ -1,6 +1,6 @@
 ---
 title: "Welcome to willburnstech - My Journey into AI, Security & Full-Stack Dev"
-date: 2024-12-10 10:00:00 +1000
+date: 2025-12-11 10:00:00 +1000
 categories: [General, Welcome]
 tags: [introduction, ai, security, full-stack]
 description: "Introducing my technical blog where I'll share insights on AI automation, penetration testing, and full-stack development."
