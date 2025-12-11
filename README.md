@@ -1,54 +1,148 @@
-# 👋 Hi, I'm Will
+# willburnstech
 
-🚀 **Full-Stack AI Engineer | Computer Science Student | Founder of AutomateWise**
+A technical blog built with [Jekyll](https://jekyllrb.com/) and the [Chirpy theme](https://github.com/cotes2020/jekyll-theme-chirpy), hosted on GitHub Pages.
+
+**Live Site:** [https://willburnstech.github.io](https://willburnstech.github.io)
+
+## About
+
+This blog covers topics in:
+- AI/Automation & LLM Engineering
+- Penetration Testing & Security Research
+- Full-Stack Development
+
+## Local Development
+
+### Prerequisites
+
+- [Ruby](https://www.ruby-lang.org/en/downloads/) (version 3.1 or higher)
+- [Bundler](https://bundler.io/)
+
+### Quick Start
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/willburnstech/willburnstech.github.io.git
+   cd willburnstech.github.io
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   bundle install
+   ```
+
+3. **Start the local server:**
+   ```bash
+   bundle exec jekyll serve
+   ```
+
+4. **View the site:**
+   Open [http://127.0.0.1:4000](http://127.0.0.1:4000) in your browser.
+
+### Live Reload (Optional)
+
+For automatic browser refresh on changes:
+```bash
+bundle exec jekyll serve --livereload
+```
+
+## Writing Posts
+
+Create new posts in the `_posts/` directory following the naming convention:
+```
+YYYY-MM-DD-title-of-post.md
+```
+
+### Front Matter Template
+
+```yaml
+---
+title: "Your Post Title"
+date: YYYY-MM-DD HH:MM:SS +1000
+categories: [Category1, Category2]
+tags: [tag1, tag2, tag3]
+description: "Brief description for SEO"
+image:
+  path: /assets/img/posts/image.png
+  alt: "Image description"
+pin: false        # Pin to top of home page
+math: false       # Enable MathJax
+mermaid: false    # Enable Mermaid diagrams
+---
+
+Your content here...
+```
+
+### Content Features
+
+- **Code blocks:** Use triple backticks with language identifier
+- **Images:** Place in `/assets/img/posts/` and reference with relative paths
+- **Prompts:** Use `{: .prompt-tip }`, `{: .prompt-info }`, `{: .prompt-warning }`, `{: .prompt-danger }`
+
+## Project Structure
+
+```
+.
+├── _config.yml          # Site configuration
+├── _data/
+│   └── contact.yml      # Footer contact links
+├── _posts/              # Blog posts
+├── _tabs/
+│   └── about.md         # About page
+├── assets/
+│   └── img/             # Images and media
+├── .github/
+│   └── workflows/       # GitHub Actions deployment
+├── Gemfile              # Ruby dependencies
+└── index.html           # Home page
+```
+
+## Deployment
+
+The site automatically deploys to GitHub Pages when you push to the `main` branch.
+
+### Manual Deployment
+
+The GitHub Actions workflow (`.github/workflows/pages-deploy.yml`) handles:
+1. Building the Jekyll site
+2. Running HTML validation
+3. Deploying to GitHub Pages
+
+### Initial GitHub Pages Setup
+
+1. Go to your repository Settings > Pages
+2. Under "Build and deployment", select **GitHub Actions** as the source
+3. Push to `main` branch to trigger the first deployment
+
+## Customization
+
+### Update Site Info
+Edit `_config.yml` to update:
+- Site title and tagline
+- Social links
+- Avatar image
+- Google Analytics ID
+- Comments provider
+
+### Add Avatar
+1. Add your avatar image to `/assets/img/avatar.png`
+2. Update the `avatar` path in `_config.yml` if using a different filename
+
+### Enable Comments
+Configure Giscus, Disqus, or Utterances in `_config.yml` under the `comments` section.
+
+## Resources
+
+- [Chirpy Theme Documentation](https://chirpy.cotes.page/)
+- [Jekyll Documentation](https://jekyllrb.com/docs/)
+- [GitHub Pages Documentation](https://docs.github.com/en/pages)
+
+## License
+
+Content is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+Code snippets are available under the [MIT License](LICENSE).
 
 ---
 
-### 💡 About Me
-- 🎓 Second-year Computer Science student at **Griffith University**  
-- 📚 Double major: **Data Science & AI** + **Algorithms & Computing**  
-- 🤖 Passionate about **AI automation, software engineering, and intelligent systems**  
-- 🌐 Interests: **AI, Automation, Crypto, Web3, Other Emerging Tech, Gym, Mauy Thai**  
-
----
-
-### 💼 Experience
-- **Founder – AutomateWise (Oct 2023 – Present)**  
-  Delivering **AI automation solutions** for SMBs to streamline operations and reduce inefficiencies.  
-
-- **CTO – TaxGuru AI (Jan 2025 – Present)**  
-  Building an **AI-powered research assistant for accountants** using Next.js, Supabase, Python, Pinecone, and open-source LLMs.  
-
-- **Junior Software Engineer – Glencore, Hail Creek Mine (Dec 2025 – Feb 2026)**  
-  Mining Improvements Department developing Web app data panel for Haul Truck operators
-
----
-
-### 🛠️ Tech Stack
-- **Languages:** HTML, CSS, Python, JavaScript, TypeScript, SQL  
-- **Frameworks & Tools:** Next.js, TailwindCSS, Supabase, Pinecone, LangChain/Graph, FastAPI, Pipecat & LiveKit and more  
-- **Automation Platforms:** n8n, Make.com, Vapi, Voiceflow and more
-- **Focus:** AI Engineering, Full-Stack Development, Workflow Automation  
-
----
-
-### 📂 Featured Projects
-- **TaxGuru AI** – AI assistant for tax research
-- **Admin Panel (TaxGuru)** - For Tax Guru admins to CRUD AI KB and view user analytics
-- **AutomateWise Solutions** – AI chat agents, voice agents, workflow automations, and dashboards  
-
----
-
-### 🤖 AutomateWise
-75% of executives fear their business could fail within 4 years without adopting AI.  
-That’s why I founded **AutomateWise**: to help SMBs implement **tailored AI solutions** that solve real-world pain points.  
-
----
-
-### 📬 Let’s Connect
-- 🌐 Portfolio: [(https://willburns.tech/)]  
-- 💼 LinkedIn: [https://www.linkedin.com/in/willburnstech/]  
-
----
-
-✨ Always building, always learning, always innovating with AI.
+**Author:** Will Burns
+**Contact:** [willburns.tech](https://willburns.tech) | [LinkedIn](https://linkedin.com/in/willburnstech) | [GitHub](https://github.com/willburnstech)
